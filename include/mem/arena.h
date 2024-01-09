@@ -205,7 +205,7 @@ static inline Arena subarena(Arena *a, byte **p) {
   } else {
     size = (a->scratch - *a->persist) / 2;
   }
-  *p = arena_alloc(a, 1, alignof(max_align_t), size, NOINIT);
+  *p = arena_alloc(a, 1, 1, size, NOINIT);
   r.persist = p;
   r.scratch = *p + size;
   r.oomjmp = a->oomjmp;
