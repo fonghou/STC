@@ -13,8 +13,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MAX_ALIGN alignof(max_align_t)
-
 typedef ptrdiff_t ssize;
 typedef unsigned char byte;
 
@@ -45,7 +43,7 @@ enum {
     abort();
   }
 
-  Arena scratch = subarena(&global);
+  Arena scratch = getscratch(&global);
 
   thing *x = New(&global, thing);
   thing *y = New(&scratch, thing);
@@ -74,13 +72,13 @@ static inline Arena newarena(byte **mem, ssize size) {
     !a_->oomjmp || __builtin_setjmp(a_->oomjmp); \
   })
 
-#define Push(S, A)                                       \
-  ({                                                     \
-    typeof(S) s_ = (S);                                  \
-    if (s_->len >= s_->cap) {                            \
-      slice_grow(s_, sizeof(*s_->data), MAX_ALIGN, (A)); \
-    }                                                    \
-    s_->data + s_->len++;                                \
+#define Push(S, A)                                               \
+  ({                                                             \
+    typeof(S) s_ = (S);                                          \
+    if (s_->len >= s_->cap) {                                    \
+      slice_grow(s_, sizeof(*s_->data), sizeof(*s_->data), (A)); \
+    }                                                            \
+    s_->data + s_->len++;                                        \
   })
 
 // clang-format off
@@ -184,7 +182,7 @@ static inline int isscratch(Arena *a) {
 }
 
 static inline Arena getscratch(Arena *a) {
-  if (isscratch(a)) return *a;
+  if (isscratch(a)) return *a;  // guard [2]
 
   Arena r = {0};
   r.persist = &a->scratch;  // [1] child invalidates grandparent

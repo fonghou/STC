@@ -3,6 +3,8 @@
 
 #include "mem/arena.h"
 
+#define MAX_ALIGN alignof(max_align_t)
+
 static inline byte *arena_realloc(Arena *a, void *src, ssize old_sz, ssize sz) {
   void *dest = arena_alloc(a, 1, MAX_ALIGN, sz, NOINIT);
   assert(dest < src || dest - old_sz >= src);
