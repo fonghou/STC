@@ -109,6 +109,25 @@ typedef struct {
 
 void vectordemo2(Arena arena) {
   LogArena(arena);
+  byte *persist = 0;
+  Arena slice = subarena(&arena, &persist);
+  LogArena(arena);
+  LogArena(slice);
+
+  int32s fibs = {0};
+  *Push(&fibs, &arena) = -1;
+  *Push(&fibs, &arena) = 0;
+  *Push(&fibs, &arena) = 1;
+
+  for (int i = 3; i <= 17 + 1; i++) {
+    *Push(&fibs, &slice) = fibs.data[i - 2] + fibs.data[i - 1];
+  }
+
+  puts("fibs: ");
+  for (int i = fibs.len - 1; i > 0; --i) {
+    printf("%d ", fibs.data[i]);
+  }
+  puts("");
 
   vec_str_ext ext = {.arena = &arena};
   vec_str *names = &ext.get;
@@ -139,7 +158,8 @@ void vectordemo2(Arena arena) {
 // clang-format on
 
 void mapdemo2(Arena arena) {
-  hmap_si_ext nums_ext = {.arena = &arena};
+  Arena scratch = getscratch(&arena);
+  hmap_si_ext nums_ext = {.arena = &scratch};
   hmap_si *nums = &nums_ext.get;
   hmap_si_emplace_or_assign(nums, "Hello", 64);
   hmap_si_emplace_or_assign(nums, "Groovy", 121);
@@ -154,7 +174,7 @@ void mapdemo2(Arena arena) {
     printf("short: %s: %d\n", cstr_str(&i.ref->first), i.ref->second);
   }
 
-  // hmap_si_drop(nums);
+  hmap_si_drop(nums);
 }
 
 #define i_type hmap_str
@@ -163,10 +183,7 @@ void mapdemo2(Arena arena) {
 #define i_val_str
 #include "stc/arena.h"
 
-void mapdemo3(Arena a) {
-  byte *persist = 0;
-  Arena local = subarena(&a, &persist);
-  LogArena(local);
+void mapdemo3(Arena local) {
   hmap_str_ext ext = {.arena = &local};
   hmap_str *table = &ext.get;
   hmap_str_emplace(table, "Map", "test");
@@ -189,7 +206,7 @@ void mapdemo3(Arena a) {
 }
 
 int main(void) {
-  enum { cap = 1 << 10 };
+  enum { cap = 1 << 20 };
   byte *buffer = malloc(cap);
   byte *persist = buffer;
   Arena arena = newarena(&persist, cap);
@@ -214,8 +231,8 @@ int main(void) {
 
   {
     Arena tmp = arena;
-    LogArena(tmp);
     Arena scratch = getscratch(&tmp);
+
     printf("\nLIST DEMO1\n");
     printf("sum=%ld", *listdemo1(scratch));
     LogArena(tmp);
@@ -232,24 +249,23 @@ int main(void) {
     LogArena(tmp);
 
     printf("\nVEC DEMO2\n");
-    vectordemo2(scratch);
+    vectordemo2(arena);
     LogArena(tmp);
   }
 
   {
     Arena tmp = arena;
-    LogArena(tmp);
     Arena scratch = getscratch(&tmp);
+    LogArena(tmp);
 
     printf("\nMAP DEMO2\n");
-    mapdemo2(arena);
+    mapdemo2(scratch);
     LogArena(tmp);
 
     printf("\nMAP DEMO3\n");
     mapdemo3(scratch);
     LogArena(tmp);
   }
-  LogArena(arena);
 
   free(buffer);
 }

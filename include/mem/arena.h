@@ -13,6 +13,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define MAX_ALIGN alignof(max_align_t)
+
 typedef ptrdiff_t ssize;
 typedef unsigned char byte;
 
@@ -72,18 +74,13 @@ static inline Arena newarena(byte **mem, ssize size) {
     !a_->oomjmp || __builtin_setjmp(a_->oomjmp); \
   })
 
-#if defined(__GCC__) || defined(__clang__)
-#pragma gcc diagnostic ignored "-Wgnu-alignof-expression"
-#pragma clang diagnostic ignored "-Wgnu-alignof-expression"
-#endif
-
-#define Push(S, A)                                                \
-  ({                                                              \
-    typeof(S) s_ = (S);                                           \
-    if (s_->len >= s_->cap) {                                     \
-      slice_grow(s_, sizeof(*s_->data), alignof(*s_->data), (A)); \
-    }                                                             \
-    s_->data + s_->len++;                                         \
+#define Push(S, A)                                       \
+  ({                                                     \
+    typeof(S) s_ = (S);                                  \
+    if (s_->len >= s_->cap) {                            \
+      slice_grow(s_, sizeof(*s_->data), MAX_ALIGN, (A)); \
+    }                                                    \
+    s_->data + s_->len++;                                \
   })
 
 // clang-format off
