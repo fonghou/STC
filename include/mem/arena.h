@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <memory.h>
 #include <stdalign.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -177,7 +178,7 @@ static inline void slice_grow(void *slice, ssize size, ssize align, Arena *a) {
   memcpy(slice, &replica, sizeof(replica));
 }
 
-static inline int isscratch(Arena *a) {
+static inline bool isscratch(Arena *a) {
   return *a->persist > a->scratch;
 }
 
