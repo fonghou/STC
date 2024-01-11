@@ -206,7 +206,7 @@ void mapdemo3(Arena local) {
 }
 
 int main(void) {
-  enum { cap = 1 << 20 };
+  enum { cap = 1 << 10 };
   byte *buffer = malloc(cap);
   byte *persist = buffer;
   Arena arena = newarena(&persist, cap);
@@ -231,17 +231,12 @@ int main(void) {
 
   {
     Arena tmp = arena;
+    LogArena(tmp);
     Arena scratch = getscratch(&tmp);
 
     printf("\nLIST DEMO1\n");
-    printf("sum=%ld", *listdemo1(scratch));
+    printf("sum=%ld", *listdemo1(tmp));
     LogArena(tmp);
-  }
-
-  {
-    Arena tmp = arena;
-    LogArena(tmp);
-    Arena scratch = getscratch(&tmp);
 
     LogArena(scratch);
     printf("\nVEC DEMO1\n");
@@ -249,7 +244,7 @@ int main(void) {
     LogArena(tmp);
 
     printf("\nVEC DEMO2\n");
-    vectordemo2(arena);
+    vectordemo2(scratch);
     LogArena(tmp);
   }
 
