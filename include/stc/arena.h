@@ -19,7 +19,7 @@ static inline byte *arena_realloc(Arena *a, void *src, ssize old_sz, ssize sz) {
 
 #endif
 
-#ifdef i_type
+#ifdef i_base
 
 #define i_allocator arena
 #define i_no_clone
