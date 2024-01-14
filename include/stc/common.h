@@ -108,8 +108,8 @@
 #define c_default_eq(x, y)      (*(x) == *(y))
 #define c_default_less(x, y)    (*(x) < *(y))
 #define c_default_cmp(x, y)     (c_default_less(y, x) - c_default_less(x, y))
-#define c_default_hash(d)       c_hash(d)
-#define c_hash(d)               c_hash_n(d, sizeof *(d))
+#define c_default_hash(d)       c_hash_pod(d)
+#define c_hash_pod(d)           c_hash_n(d, sizeof *(d))
 
 #define c_default_clone(v)      (v)
 #define c_default_toraw(vp)     (*(vp))
@@ -152,7 +152,7 @@ STC_INLINE uint64_t c_hash_str(const char *str)
     { return c_hash_n(str, c_strlen(str)); }
 
 STC_INLINE uint64_t _c_hash_mix(uint64_t h[], int n) { // n > 0
-    for (int i = 1; i < n; ++i) h[0] ^= h[0] + h[i]; // non-commutative!
+    for (int i = 1; i < n; ++i) h[0] += h[0] ^ h[i]; // non-commutative!
     return h[0];
 }
 
