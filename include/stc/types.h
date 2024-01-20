@@ -1,6 +1,6 @@
 /* MIT License
  *
- * Copyright (c) 2023 Tyge Løvset
+ * Copyright (c) 2024 Tyge Løvset
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ typedef union {
     typedef struct { \
         SELF##_value *ref; \
         bool inserted; \
-        uint8_t hashx; \
+        uint8_t hashx, dist; \
     } SELF##_result; \
 \
     typedef struct { \

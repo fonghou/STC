@@ -1,6 +1,6 @@
 /* MIT License
  *
- * Copyright (c) 2023 Tyge Løvset
+ * Copyright (c) 2024 Tyge Løvset
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ int main(void) {
 #include <stdio.h>
 #define i_type IDeq
 #define i_key int
-#define i_opt c_use_cmp | c_more // retain input template params to be reused by sort.h
+#define i_opt c_use_cmp | c_more // retain input template params to be reused by quicksort.h
 #include "stc/deq.h"
 #include "stc/algo/quicksort.h"
 
