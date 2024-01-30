@@ -15,7 +15,7 @@ static inline byte *arena_realloc(Arena *a, void *src, ssize old_sz, ssize sz) {
 #define arena_malloc(sz)             arena_alloc(c_extend()->arena, 1, MAX_ALIGN, (sz), NOINIT)
 #define arena_calloc(n, sz)          arena_alloc(c_extend()->arena, sz, sz, n, 0)
 #define arena_realloc(p, old_sz, sz) arena_realloc(c_extend()->arena, p, (old_sz), (sz))
-#define arena_free(p, sz)            // p ? memset(p, 0x0, sz) : 0;
+#define arena_free(p, sz)            ((void)0)
 
 #endif
 

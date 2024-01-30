@@ -22,9 +22,9 @@ int point_cmp(const Point* a, const Point* b) {
 
 // #define i_TYPE list_pnt, Point
 #define i_type list_pnt
-#define i_base list
 #define i_key  Point
 #define i_cmp  point_cmp
+#define i_base list
 #include "stc/arena.h"
 // #define i_is_forward
 // #include "stc/list.h"
@@ -59,6 +59,10 @@ int main(void) {
   Arena arena = newarena(&persist, cap);
 
   MyStruct my = {0};
+  MyList_ext mylist = {.arena = &arena};
+
+  MyList_push_back(&mylist.get, my);
+
   my.intlist = (list_i32_ext){.arena = &arena};
   my.pntlist = (list_pnt_ext){.arena = &arena};
 

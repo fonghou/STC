@@ -213,7 +213,6 @@ int main(void) {
 
   if (ArenaOOM(&arena)) {
     fputs("!!! OOM realloc !!!\n", stderr);
-    LogArena(arena);
     ssize cap = 1 << 20;
     buffer = persist = realloc(buffer, cap);
     arena.persist = &persist;

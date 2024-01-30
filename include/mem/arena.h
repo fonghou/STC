@@ -96,7 +96,7 @@ static inline Arena newarena(byte **mem, ssize size) {
 #endif
 
 #ifdef NDEBUG
-#  define assert(c) while (!(c)) __builtin_trap()
+#  define assert(c) while (!(c)) __builtin_unreachable()
 #else
 #  include <assert.h>
 #endif
