@@ -193,19 +193,4 @@ static inline Arena getscratch(Arena *a) {
   return r;
 }
 
-static inline Arena subarena(Arena *a, byte **p) {
-  Arena r = {0};
-  ssize size = 0;
-  if (*a->persist > a->scratch) {
-    size = (*a->persist - a->scratch) / 2;
-  } else {
-    size = (a->scratch - *a->persist) / 2;
-  }
-  *p = arena_alloc(a, 1, 1, size, NOINIT);
-  r.persist = p;
-  r.scratch = *p + size;
-  r.oomjmp = a->oomjmp;
-  return r;
-}
-
 #endif  // ARENA_H
