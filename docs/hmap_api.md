@@ -179,7 +179,7 @@ int main(void)
 
     IDMap idnames = {0};
 
-    c_forlist (i, IDMap_raw, { {100, "Red"}, {110, "Blue"} })
+    c_foritems (i, IDMap_raw, { {100, "Red"}, {110, "Blue"} })
         IDMap_emplace(&idnames, i.ref->first, i.ref->second);
 
     // replace existing mapped value:
@@ -304,7 +304,7 @@ static inline void Viking_drop(Viking* vk) {
 }
 
 #define i_type Vikings
-#define i_key_class Viking
+#define i_keyclass Viking
 #define i_val int
 #include "stc/hmap.h"
 
@@ -383,8 +383,8 @@ static inline RViking Viking_toraw(const Viking* vp) {
 
 // With this in place, we define the Viking => int hash map type:
 #define i_type      Vikings
-#define i_raw_class RViking     // lookup type ; binds _cmp, _hash (unless overridden)
-#define i_key_class Viking      // key type    ; binds _drop, _clone, _from, _toraw
+#define i_rawclass RViking     // lookup type ; binds _cmp, _hash (unless overridden)
+#define i_keyclass Viking      // key type    ; binds _drop, _clone, _from, _toraw
 #define i_val       int         // mapped type
 #define i_hash(rp)  c_hash_mix(c_hash_str(rp->name), c_hash_str(rp->country))
 #include "stc/hmap.h"

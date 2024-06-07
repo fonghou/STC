@@ -10,7 +10,7 @@
 // Map of int => list_str.
 #define i_type Multimap
 #define i_key int
-#define i_val_class list_str // set i_val = list_str, bind list_str_clone and list_str_drop
+#define i_valclass list_str // set i_val = list_str, bind list_str_clone and list_str_drop
 #define i_cmp -c_default_cmp // like std::greater<int>
 #include "stc/smap.h"
 
@@ -35,8 +35,8 @@ int main(void)
     Multimap mmap = {0};
 
     // list-initialize
-    typedef struct {int a; const char* b;} pair;
-    c_forlist (i, pair, {{2, "foo"}, {2, "bar"}, {3, "baz"}, {1, "abc"}, {5, "def"}})
+    struct pair {int a; const char* b;};
+    c_foritems (i, struct pair, {{2, "foo"}, {2, "bar"}, {3, "baz"}, {1, "abc"}, {5, "def"}})
         insert(&mmap, i.ref->a, i.ref->b);
     print("#1", mmap);
 
@@ -52,7 +52,7 @@ int main(void)
     print("#4", mmap);
 
     // insert using initialization_list
-    c_forlist (i, pair, {{5, "one"}, {5, "two"}})
+    c_foritems (i, struct pair, {{5, "one"}, {5, "two"}})
         insert(&mmap, i.ref->a, i.ref->b);
     print("#5", mmap);
 

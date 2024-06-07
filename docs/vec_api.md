@@ -120,7 +120,7 @@ int main(void)
     vec_int_push(&vec, 13);
 
     // Append a set of numbers
-    c_forlist (i, int, {7, 5, 16, 8})
+    c_foritems (i, int, {7, 5, 16, 8})
         vec_int_push(&vec, *i.ref);
 
     printf("initial:");
@@ -206,9 +206,9 @@ void User_drop(User* self) {
 
 // Declare a managed, clonable vector of users.
 #define i_type Users
-#define i_key_class User // User is a "class" and binds the _clone, _drop, and _cmp functions.
+#define i_keyclass User  // User is a "class" and binds the _clone, _drop, and _cmp functions.
 #define i_use_cmp        // Sorting/searching a vec is only enabled by either directly specifying an i_cmp function
-                         // or by defining i_use_cmp (i_cmp is then indirectly specified through i_key_class,
+                         // or by defining i_use_cmp (i_cmp is then indirectly specified through i_keyclass,
                          // or it is assumed that i_key is a built-in type that works with < and == operators).
 #include "stc/vec.h"
 

@@ -30,12 +30,12 @@ void Person_drop(Person* p) {
 }
 
 #define i_type PSPtr
-#define i_key_class Person // ensure Person_drop
+#define i_keyclass Person // ensure Person_drop
 #define i_use_cmp
 #include "stc/arc.h"
 
 #define i_type Persons
-#define i_key_arcbox PSPtr // binds PSPtr_cmp, PSPtr_drop...
+#define i_key_arc PSPtr // binds PSPtr_cmp, PSPtr_drop...
 #define i_use_cmp
 #include "stc/vec.h"
 
@@ -62,7 +62,7 @@ int main(void)
         Persons_emplace(&vec, Person_make("Dale", "Cooper"));
 
         // Clone/share p and q to the vector
-        c_forlist (i, PSPtr, {p, q})
+        c_foritems (i, PSPtr, {p, q})
             Persons_push(&vec, PSPtr_clone(*i.ref));
 
         c_foreach (i, Persons, vec)

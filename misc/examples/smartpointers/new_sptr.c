@@ -9,7 +9,7 @@ int Person_cmp(const Person* a, const Person* b);
 uint64_t Person_hash(const Person* p);
 
 #define i_type PersonArc
-#define i_key_class Person // "class" assume _clone, _drop, _cmp, _hash is defined.
+#define i_keyclass Person // "class" assume _clone, _drop, _cmp, _hash is defined.
 #define i_use_cmp
 #include "stc/arc.h"
 
@@ -19,11 +19,11 @@ uint64_t Person_hash(const Person* p);
 #include "stc/arc.h"
 
 #define i_type IPStack
-#define i_key_arcbox IPtr
+#define i_key_arc IPtr
 #include "stc/stack.h"
 
 #define i_type PASet
-#define i_key_arcbox PersonArc
+#define i_key_arc PersonArc
 #include "stc/hset.h"
 
 
