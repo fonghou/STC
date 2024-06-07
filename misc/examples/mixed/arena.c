@@ -38,8 +38,8 @@ void stringdemo1(void) {
 int64_t *listdemo1(Arena arena) {
   list_int_ext nums_ext = {.arena = &arena};
   list_int_ext nums2_ext = {.arena = &arena};
-  list_int *nums = &nums_ext.get;
-  list_int *nums2 = &nums2_ext.get;
+  list_int *nums = nums_ext.get;
+  list_int *nums2 = nums2_ext.get;
   for (int i = 0; i < 10; ++i) list_int_push_back(nums, i);
   for (int i = 100; i < 110; ++i) list_int_push_back(nums2, i);
 
@@ -76,7 +76,7 @@ int64_t *listdemo1(Arena arena) {
 
 void vectordemo1(Arena arena) {
   vec_ll_ext ext = {.arena = &arena};
-  vec_ll *bignums = &ext.get;
+  vec_ll *bignums = ext.get;
   vec_ll_reserve(bignums, 100);
   for (int i = 10; i <= 100; i += 10) vec_ll_push(bignums, i * i);
 
@@ -109,8 +109,7 @@ typedef struct {
 
 void vectordemo2(Arena arena) {
   LogArena(arena);
-  byte *persist = 0;
-  Arena slice = subarena(&arena, &persist);
+  Arena slice = arena;
   LogArena(arena);
   LogArena(slice);
 
@@ -124,13 +123,13 @@ void vectordemo2(Arena arena) {
   }
 
   puts("fibs: ");
-  for (int i = fibs.len - 1; i > 0; --i) {
+  for (size_t i = fibs.len - 1; i > 0; --i) {
     printf("%d ", fibs.data[i]);
   }
   puts("");
 
   vec_str_ext ext = {.arena = &arena};
-  vec_str *names = &ext.get;
+  vec_str *names = ext.get;
 
   vec_str_emplace_back(names, "Joe");
   vec_str_emplace_back(names, "Chris");
@@ -160,7 +159,7 @@ void vectordemo2(Arena arena) {
 void mapdemo2(Arena arena) {
   Arena scratch = getscratch(&arena);
   hmap_si_ext nums_ext = {.arena = &scratch};
-  hmap_si *nums = &nums_ext.get;
+  hmap_si *nums = nums_ext.get;
   hmap_si_emplace_or_assign(nums, "Hello", 64);
   hmap_si_emplace_or_assign(nums, "Groovy", 121);
   hmap_si_emplace_or_assign(nums, "Groovy", 200);  // overwrite previous
@@ -185,7 +184,7 @@ void mapdemo2(Arena arena) {
 
 void mapdemo3(Arena local) {
   hmap_str_ext ext = {.arena = &local};
-  hmap_str *table = &ext.get;
+  hmap_str *table = ext.get;
   hmap_str_emplace(table, "Map", "test");
   hmap_str_emplace(table, "Make", "my");
   hmap_str_emplace(table, "Sunny", "day");
