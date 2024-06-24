@@ -8,7 +8,7 @@
 
 // hmap of cstr => IBox
 #define i_type Boxmap
-#define i_key_str
+#define i_key_cstr
 #define i_val_box IBox // i_val_box: use properties from IBox automatically
 #include "stc/hmap.h"
 
@@ -18,8 +18,8 @@ int main(void)
     Boxmap map = {0};
 
     puts("Map cstr => IBox:");
-    Boxmap_insert(&map, cstr_from("Test1"), IBox_make(1));
-    Boxmap_insert(&map, cstr_from("Test2"), IBox_make(2));
+    Boxmap_insert(&map, cstr_lit("Test1"), IBox_make(1));
+    Boxmap_insert(&map, cstr_lit("Test2"), IBox_make(2));
 
     // Simpler: emplace() implicitly creates cstr from const char* and IBox from long!
     Boxmap_emplace(&map, "Test3", 3);

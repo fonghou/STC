@@ -117,7 +117,7 @@ uint64_t       csview_hash(const csview* x);
 
 | Name           | Value                | Usage                                        |
 |:---------------|:---------------------|:---------------------------------------------|
-| `c_SVARG(sv)`     | printf argument      | `printf("sv: %.*s\n", c_SVARG(sv));`            |
+| `c_SVARG(sv)`  | printf argument      | `printf("sv: %.*s\n", c_SVARG(sv));`         |
 
 ## Example
 ```c
@@ -127,13 +127,13 @@ uint64_t       csview_hash(const csview* x);
 
 int main(void)
 {
-    cstr str1 = cstr_from("We think in generalities, but we live in details.");
+    cstr str1 = cstr_lit("We think in generalities, but we live in details.");
                                                         // (quoting Alfred N. Whitehead)
 
-    csview ss1 = cstr_substr_ex(&str1, 3, 5);          // "think"
+    csview ss1 = cstr_substr_ex(&str1, 3, 5);           // "think"
     intptr_t pos = cstr_find(&str1, "live");            // position of "live" in str1
-    csview ss2 = cstr_substr_ex(&str1, pos, 4);        // get "live"
-    csview ss3 = cstr_slice_ex(&str1, -8, -1);         // get "details"
+    csview ss2 = cstr_substr_ex(&str1, pos, 4);         // get "live"
+    csview ss3 = cstr_slice_ex(&str1, -8, -1);          // get "details"
     printf("%.*s %.*s %.*s\n",
         c_SVARG(ss1), c_SVARG(ss2), c_SVARG(ss3));
     cstr s1 = cstr_lit("Apples are red");
@@ -189,15 +189,15 @@ void print_split(csview input, const char* sep)
 }
 #define i_implement
 #include "stc/cstr.h"
-#define i_key_str
+#define i_key_cstr
 #include "stc/stack.h"
 
-stack_str string_split(csview input, const char* sep)
+stack_cstr string_split(csview input, const char* sep)
 {
-    stack_str out = {0};
+    stack_cstr out = {0};
 
     c_fortoken_sv (i, input, sep)
-        stack_str_push(&out, cstr_from_sv(i.token));
+        stack_cstr_push(&out, cstr_from_sv(i.token));
 
     return out;
 }
@@ -207,13 +207,13 @@ int main(void)
     print_split(c_sv("//This is a//double-slash//separated//string"), "//");
     print_split(c_sv("This has no matching separator"), "xx");
 
-    stack_str s = string_split(c_sv("Split,this,,string,now,"), ",");
+    stack_cstr s = string_split(c_sv("Split,this,,string,now,"), ",");
 
-    c_foreach (i, stack_str, s)
+    c_foreach (i, stack_cstr, s)
         printf("[%s]\n", cstr_str(i.ref));
     puts("");
 
-    stack_str_drop(&s);
+    stack_cstr_drop(&s);
 }
 ```
 Output:
