@@ -22,7 +22,7 @@ struct Arena {
   byte **start;
   byte *stop;
   void **oomjmp;
-  Arena *parent;
+  Arena *persist;
 };
 
 enum {
@@ -106,13 +106,13 @@ byte* arena_alloc(Arena *a, ssize size, ssize align, ssize count, unsigned flags
   // clang-format on
   byte *r = 0;
   // sync [2]
-  if (a->parent) {
-    byte *scratch = *a->parent->start;
+  if (a->persist) {
+    byte *start = *a->persist->start;
     if (*a->start < a->stop) {
-      a->stop = scratch < a->stop ? scratch : a->stop;
+      a->stop = start < a->stop ? start : a->stop;
       if (*a->start > a->stop) goto OOM;
     } else {
-      a->stop = a->stop < scratch ? scratch : a->stop;
+      a->stop = a->stop < start ? start : a->stop;
       if (*a->start < a->stop) goto OOM;
     }
   }
@@ -122,12 +122,12 @@ byte* arena_alloc(Arena *a, ssize size, ssize align, ssize count, unsigned flags
     ssize padding = -(uintptr_t)*a->start & (align - 1);
     if (count > (avail - padding) / size) goto OOM;
     r = *a->start + padding;
-    *a->start += padding + size * count;  // move to higher address
+    *a->start += padding + size * count;
   } else {
     ssize avail = *a->start - a->stop;
     ssize padding = +(uintptr_t)*a->start & (align - 1);
     if (count > (avail - padding) / size) goto OOM;
-    *a->start -= padding + size * count;  // move to lower address
+    *a->start -= padding + size * count;
     r = *a->start;
   }
 
@@ -151,9 +151,9 @@ static inline void slice_grow(void *slice, ssize size, ssize align, Arena *a) {
   } replica;
   memcpy(&replica, slice, sizeof(replica));
 
-  // assert(replica.len >= 0);
-  // assert(replica.cap >= 0);
-  // assert(replica.len <= replica.cap);
+  assert(replica.len >= 0);
+  assert(replica.cap >= 0);
+  assert(replica.len <= replica.cap);
 
   if (!replica.data) {
     replica.cap = 1;
@@ -182,10 +182,10 @@ static inline Arena getscratch(Arena *a) {
   if (isscratch(a)) return *a;  // guard [2]
 
   Arena scratch = {0};
-  scratch.start = &a->stop;  // [1] child invalidates grandparent
-  scratch.stop = *a->start;  // [2] parent invalidates child
+  scratch.start = &a->stop;
+  scratch.stop = *a->start;
   scratch.oomjmp = a->oomjmp;
-  scratch.parent = a;
+  scratch.persist = a;
   return scratch;
 }
 
