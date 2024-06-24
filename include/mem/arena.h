@@ -110,30 +110,30 @@ byte* arena_alloc(Arena *a, ssize size, ssize align, ssize count, unsigned flags
     byte *start = *a->persist->start;
     if (*a->start < a->stop) {
       a->stop = start < a->stop ? start : a->stop;
-      if (*a->start > a->stop) goto OOM;
+      if (*a->start > a->stop) goto OOM_EXIT;
     } else {
       a->stop = a->stop < start ? start : a->stop;
-      if (*a->start < a->stop) goto OOM;
+      if (*a->start < a->stop) goto OOM_EXIT;
     }
   }
 
   if (*a->start < a->stop) {
     ssize avail = a->stop - *a->start;
     ssize padding = -(uintptr_t)*a->start & (align - 1);
-    if (count > (avail - padding) / size) goto OOM;
+    if (count > (avail - padding) / size) goto OOM_EXIT;
     r = *a->start + padding;
     *a->start += padding + size * count;
   } else {
     ssize avail = *a->start - a->stop;
     ssize padding = +(uintptr_t)*a->start & (align - 1);
-    if (count > (avail - padding) / size) goto OOM;
+    if (count > (avail - padding) / size) goto OOM_EXIT;
     *a->start -= padding + size * count;
     r = *a->start;
   }
 
   return flags & NOINIT ? r : (byte *)memset(r, 0, size * count);
 
-OOM:
+OOM_EXIT:
   if (flags & SOFTFAIL || !a->oomjmp) return NULL;
 #ifndef OOM
   assert(a->oomjmp);
