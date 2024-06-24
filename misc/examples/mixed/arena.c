@@ -214,8 +214,8 @@ int main(void) {
     fputs("!!! OOM realloc !!!\n", stderr);
     ssize cap = 1 << 20;
     buffer = persist = realloc(buffer, cap);
-    arena.persist = &persist;
-    arena.scratch = persist + cap;
+    arena.start = &persist;
+    arena.stop = persist + cap;
 
     if (ArenaOOM(&arena)) {
       fputs("!!! OOM exit !!!\n", stderr);

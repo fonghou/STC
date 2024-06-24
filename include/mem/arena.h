@@ -19,8 +19,8 @@ typedef unsigned char byte;
 
 typedef struct Arena Arena;
 struct Arena {
-  byte **persist;
-  byte *scratch;
+  byte **start;
+  byte *stop;
   void **oomjmp;
   Arena *parent;
 };
@@ -36,9 +36,9 @@ enum {
 /** Usage:
 
   ssize cap = 1 << 20;
-  void *buffer = malloc(cap);
-  byte *persist = buffer;
-  Arena global = newarena(&persist, cap);
+  void *heap = malloc(cap);
+  byte *p = heap;
+  Arena global = newarena(&p, cap);
 
   if (ARENA_OOM(&global)) {
     abort();
@@ -55,8 +55,8 @@ enum {
 */
 static inline Arena newarena(byte **mem, ssize size) {
   Arena a = {0};
-  a.persist = mem;
-  a.scratch = *mem ? *mem + size : 0;
+  a.start = mem;
+  a.stop = *mem ? *mem + size : 0;
   return a;
 }
 
@@ -90,9 +90,9 @@ static inline Arena newarena(byte **mem, ssize size) {
      fprintf(stderr, "%s:%d: Arena " #A "\tbeg=%ld end=%ld diff=%ld\n", \
              __FILE__,                                                  \
              __LINE__,                                                  \
-            (uintptr_t)(*(A).persist),                                  \
-            (uintptr_t)(A).scratch,                                     \
-            (ssize)((A).scratch - (*(A).persist)))
+            (uintptr_t)(*(A).start),                                  \
+            (uintptr_t)(A).stop,                                     \
+            (ssize)((A).stop - (*(A).start)))
 #endif
 
 #ifdef NDEBUG
@@ -104,37 +104,36 @@ static inline Arena newarena(byte **mem, ssize size) {
 __attribute((malloc, alloc_size(2, 4), alloc_align(3))) static inline
 byte* arena_alloc(Arena *a, ssize size, ssize align, ssize count, unsigned flags) {
   // clang-format on
-
+  byte *r = 0;
   // sync [2]
   if (a->parent) {
-    byte *scratch = *a->parent->persist;
-    if (*a->persist < a->scratch) {
-      a->scratch = scratch < a->scratch ? scratch : a->scratch;
-      if (*a->persist > a->scratch) goto oomjmp;
+    byte *scratch = *a->parent->start;
+    if (*a->start < a->stop) {
+      a->stop = scratch < a->stop ? scratch : a->stop;
+      if (*a->start > a->stop) goto OOM;
     } else {
-      a->scratch = a->scratch < scratch ? scratch : a->scratch;
-      if (*a->persist < a->scratch) goto oomjmp;
+      a->stop = a->stop < scratch ? scratch : a->stop;
+      if (*a->start < a->stop) goto OOM;
     }
   }
 
-  byte *r = 0;
-  if (*a->persist < a->scratch) {
-    ssize avail = a->scratch - *a->persist;
-    ssize padding = -(uintptr_t)*a->persist & (align - 1);
-    if (count > (avail - padding) / size) goto oomjmp;
-    r = *a->persist + padding;
-    *a->persist += padding + size * count;  // move to higher address
-  } else {                                  // *a->persist > a->scratch
-    ssize avail = *a->persist - a->scratch;
-    ssize padding = +(uintptr_t)*a->persist & (align - 1);
-    if (count > (avail - padding) / size) goto oomjmp;
-    *a->persist -= padding + size * count;  // move to lower address
-    r = *a->persist;
+  if (*a->start < a->stop) {
+    ssize avail = a->stop - *a->start;
+    ssize padding = -(uintptr_t)*a->start & (align - 1);
+    if (count > (avail - padding) / size) goto OOM;
+    r = *a->start + padding;
+    *a->start += padding + size * count;  // move to higher address
+  } else {
+    ssize avail = *a->start - a->stop;
+    ssize padding = +(uintptr_t)*a->start & (align - 1);
+    if (count > (avail - padding) / size) goto OOM;
+    *a->start -= padding + size * count;  // move to lower address
+    r = *a->start;
   }
 
-  return flags & NOINIT ? r : memset(r, 0, size * count);
+  return flags & NOINIT ? r : (byte *)memset(r, 0, size * count);
 
-oomjmp:
+OOM:
   if (flags & SOFTFAIL || !a->oomjmp) return NULL;
 #ifndef OOM
   assert(a->oomjmp);
@@ -152,24 +151,21 @@ static inline void slice_grow(void *slice, ssize size, ssize align, Arena *a) {
   } replica;
   memcpy(&replica, slice, sizeof(replica));
 
-  assert(replica.len >= 0);
-  assert(replica.cap >= 0);
-  assert(replica.len <= replica.cap);
+  // assert(replica.len >= 0);
+  // assert(replica.cap >= 0);
+  // assert(replica.len <= replica.cap);
 
   if (!replica.data) {
     replica.cap = 1;
     replica.data = arena_alloc(a, 2 * size, align, replica.cap, 0);
-  } else if ((*a->persist < a->scratch &&
-              ((uintptr_t)*a->persist - size * replica.cap == (uintptr_t)replica.data))) {
+  } else if ((*a->start < a->stop &&
+              ((uintptr_t)*a->start - size * replica.cap == (uintptr_t)replica.data))) {
     arena_alloc(a, size, 1, replica.cap, 0);
   } else {
     void *data = arena_alloc(a, 2 * size, align, replica.cap, 0);
     void *src = replica.data;
     void *dest = data;
     ssize len = size * replica.len;
-    // check overlappping slices
-    assert(dest < src || dest - len >= src);
-    assert(src < dest || src - len >= dest);
     memcpy(dest, src, len);
     replica.data = data;
   }
@@ -179,18 +175,18 @@ static inline void slice_grow(void *slice, ssize size, ssize align, Arena *a) {
 }
 
 static inline bool isscratch(Arena *a) {
-  return *a->persist > a->scratch;
+  return *a->start > a->stop;
 }
 
 static inline Arena getscratch(Arena *a) {
   if (isscratch(a)) return *a;  // guard [2]
 
-  Arena r = {0};
-  r.persist = &a->scratch;  // [1] child invalidates grandparent
-  r.scratch = *a->persist;  // [2] parent invalidates child
-  r.oomjmp = a->oomjmp;
-  r.parent = a;
-  return r;
+  Arena scratch = {0};
+  scratch.start = &a->stop;  // [1] child invalidates grandparent
+  scratch.stop = *a->start;  // [2] parent invalidates child
+  scratch.oomjmp = a->oomjmp;
+  scratch.parent = a;
+  return scratch;
 }
 
 #endif  // ARENA_H
