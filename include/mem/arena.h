@@ -151,18 +151,20 @@ static inline void slice_grow(void *slice, ssize size, ssize align, Arena *a) {
   } replica;
   memcpy(&replica, slice, sizeof(replica));
 
-  assert(replica.len >= 0);
-  assert(replica.cap >= 0);
-  assert(replica.len <= replica.cap);
+  int grow = 16;
 
   if (!replica.data) {
-    replica.cap = 1;
-    replica.data = arena_alloc(a, 2 * size, align, replica.cap, 0);
+    replica.cap = grow;
+    replica.data = arena_alloc(a, size, align, replica.cap, 0);
   } else if ((*a->start < a->stop &&
               ((uintptr_t)*a->start - size * replica.cap == (uintptr_t)replica.data))) {
-    arena_alloc(a, size, 1, replica.cap, 0);
+    // grow in place
+    arena_alloc(a, size, 1, grow, 0);
+    replica.cap += grow;
   } else {
-    void *data = arena_alloc(a, 2 * size, align, replica.cap, 0);
+    // grow in scratch
+    replica.cap += grow;
+    void *data = arena_alloc(a, size, align, replica.cap, 0);
     void *src = replica.data;
     void *dest = data;
     ssize len = size * replica.len;
@@ -170,7 +172,6 @@ static inline void slice_grow(void *slice, ssize size, ssize align, Arena *a) {
     replica.data = data;
   }
 
-  replica.cap *= 2;
   memcpy(slice, &replica, sizeof(replica));
 }
 

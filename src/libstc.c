@@ -2,6 +2,7 @@
 #define i_import
 #include "../include/stc/cregex.h" /* cstr. utf8, and cregex */
 #include "../include/stc/csview.h"
+#include "../include/stc/zsview.h"
 #include "../include/stc/crand.h"
 #include "../include/stc/cspan.h"
 #if __STDC_VERSION__ >= 201112L
