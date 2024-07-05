@@ -162,7 +162,7 @@ static inline void slice_grow(void *slice, ssize size, ssize align, Arena *a) {
     arena_alloc(a, size, 1, grow, 0);
     replica.cap += grow;
   } else {
-    // grow in scratch
+    // grow in move
     replica.cap += grow;
     void *data = arena_alloc(a, size, align, replica.cap, 0);
     void *src = replica.data;
