@@ -14,6 +14,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define breakpoint() asm("int3; nop")
+#define ref(x)       const x[static 1]
+#define mutref(x)    x[static 1]
+
 typedef ptrdiff_t ssize;
 typedef unsigned char byte;
 
@@ -30,15 +34,11 @@ enum {
   NOINIT = 1 << 1,
 };
 
-#define ref(x)    const x[static 1]
-#define mutref(x) x[static 1]
-
 /** Usage:
 
   ssize cap = 1 << 20;
   void *heap = malloc(cap);
-  byte *p = heap;
-  Arena global = newarena(&p, cap);
+  Arena global = newarena(&(byte *){heap}, cap);
 
   if (ARENA_OOM(&global)) {
     abort();
@@ -53,13 +53,6 @@ enum {
   free(buffer);
 
 */
-static inline Arena newarena(byte **mem, ssize size) {
-  Arena a = {0};
-  a.start = mem;
-  a.stop = *mem ? *mem + size : 0;
-  return a;
-}
-
 #define New(...)                       ARENA_NEWX(__VA_ARGS__, ARENA_NEW4, ARENA_NEW3, ARENA_NEW2)(__VA_ARGS__)
 #define ARENA_NEWX(a, b, c, d, e, ...) e
 #define ARENA_NEW2(a, t)               (t *)arena_alloc(a, sizeof(t), alignof(t), 1, 0)
@@ -100,6 +93,13 @@ static inline Arena newarena(byte **mem, ssize size) {
 #else
 #  include <assert.h>
 #endif
+
+static inline Arena newarena(byte **mem, ssize size) {
+  Arena a = {0};
+  a.start = mem;
+  a.stop = *mem ? *mem + size : 0;
+  return a;
+}
 
 __attribute((malloc, alloc_size(2, 4), alloc_align(3))) static inline
 byte* arena_alloc(Arena *a, ssize size, ssize align, ssize count, unsigned flags) {
