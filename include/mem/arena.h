@@ -14,10 +14,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define breakpoint() asm("int3; nop")
-#define ref(x)       const x[static 1]
-#define mutref(x)    x[static 1]
-
 typedef ptrdiff_t ssize;
 typedef unsigned char byte;
 
@@ -89,9 +85,15 @@ enum {
 #endif
 
 #ifdef NDEBUG
-#  define assert(c) while (!(c)) __builtin_unreachable()
+#  define assert(c)    while (!(c)) __builtin_unreachable()
 #else
 #  include <assert.h>
+#endif
+
+#if !defined(NDEBUG) && defined(__GNUC__) && !defined(__COSMOCC__)
+#  define breakpoint() asm("int3; nop")
+#else
+#  define breakpoint() do {} while (0)
 #endif
 
 static inline Arena newarena(byte **mem, ssize size) {
