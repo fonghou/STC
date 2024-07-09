@@ -85,7 +85,7 @@ enum {
 
 #if defined(__GNUC__) && !defined(__COSMOCC__)
 #  define assert(c)  while (!(c)) __builtin_unreachable()
-#elif defined(_MSC_VER)
+#elif defined(NDEBUG) && defined(_MSC_VER)
 #  define assert(c)  do if (!(c)) __debugbreak(); while (0)
 #else
 #  include <assert.h>
