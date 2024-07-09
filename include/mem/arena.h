@@ -7,7 +7,6 @@
     https://nullprogram.com/blog/2023/10/05/
 */
 
-#include <assert.h>
 #include <memory.h>
 #include <stdalign.h>
 #include <stdbool.h>
@@ -84,8 +83,10 @@ enum {
             (ssize)((A).end - (*(A).beg)))
 #endif
 
-#ifdef NDEBUG
+#if defined(__GNUC__) && !defined(__COSMOCC__)
 #  define assert(c)  while (!(c)) __builtin_unreachable()
+#elif defined(_MSC_VER)
+#  define assert(c)  do if (!(c)) __debugbreak(); while (0)
 #else
 #  include <assert.h>
 #endif
