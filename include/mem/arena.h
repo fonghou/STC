@@ -84,16 +84,16 @@ enum {
             (ssize)((A).end - (*(A).beg)))
 #endif
 
-#if defined(NDEBUG) && defined(__GNUC__)
-#  define assert(c)    while (!(c)) __builtin_trap()
+#ifdef NDEBUG
+#  if defined(__GNUC__)
+#    define assert(c)    if (!(c)) __builtin_trap()
+#  elif defined(_MSC_VER)
+#    define assert(c)    if (!(c)) __debugbreak()
+#  else
+#    define assert(c)    if (!(c)) *(volatile int *)0 = 0
+#  endif
 #else
 #  include <assert.h>
-#endif
-
-#if !defined(NDEBUG) && defined(__GNUC__) && !defined(__COSMOCC__)
-#  define breakpoint() asm("int3; nop")
-#else
-#  define breakpoint() do {} while (0)
 #endif
 
 static inline Arena newarena(byte **mem, ssize size) {
