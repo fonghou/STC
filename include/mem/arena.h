@@ -85,13 +85,7 @@ enum {
 #endif
 
 #ifdef NDEBUG
-#  if defined(__GNUC__)
-#    define assert(c)    if (!(c)) __builtin_trap()
-#  elif defined(_MSC_VER)
-#    define assert(c)    if (!(c)) __debugbreak()
-#  else
-#    define assert(c)    if (!(c)) *(volatile int *)0 = 0
-#  endif
+#  define assert(c)  while (!(c)) __builtin_unreachable()
 #else
 #  include <assert.h>
 #endif
