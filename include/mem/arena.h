@@ -84,8 +84,8 @@ enum {
             (ssize)((A).end - (*(A).beg)))
 #endif
 
-#ifdef NDEBUG
-#  define assert(c)    while (!(c)) __builtin_unreachable()
+#if defined(NDEBUG) && defined(__GNUC__)
+#  define assert(c)    while (!(c)) __builtin_trap()
 #else
 #  include <assert.h>
 #endif
